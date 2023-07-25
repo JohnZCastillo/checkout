@@ -6,6 +6,7 @@ import checkout.exception.ZeroQuantityException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 /**
@@ -16,8 +17,8 @@ import java.util.function.Consumer;
  */
 public class Checkout extends Cart {
 
-    private final List<Consumer<LinkedHashMap<Product, Integer>>> addAction;
-    private final List<Consumer<LinkedHashMap<Product, Integer>>> removeAction;
+    private final List<BiConsumer<Product, Integer>> addAction;
+    private final List<BiConsumer<Product, Integer>> removeAction;
     private final List<Consumer<LinkedHashMap<Product, Integer>>> clearAction;
     private final List<Consumer<LinkedHashMap<Product, Integer>>> action;
 
@@ -37,7 +38,7 @@ public class Checkout extends Cart {
      *
      * @param consumer The consumer to be added for the add event.
      */
-    public void onAdd(Consumer<LinkedHashMap<Product, Integer>> consumer) {
+    public void onAdd(BiConsumer<Product, Integer> consumer) {
         addAction.add(consumer);
     }
 
@@ -46,7 +47,7 @@ public class Checkout extends Cart {
      *
      * @param consumer The consumer to be added for the remove event.
      */
-    public void onRemove(Consumer<LinkedHashMap<Product, Integer>> consumer) {
+    public void onRemove(BiConsumer<Product, Integer> consumer) {
         removeAction.add(consumer);
     }
 
@@ -70,21 +71,20 @@ public class Checkout extends Cart {
 
     /**
      * Overrides the add method from the Cart class to include additional checks
-     * and actions. It throws ZeroQuantityException if the quantity is zero or
-     * negative, and fires the registered listeners for the add event.
+     * and actions. It throws a ZeroQuantityException if the quantity is zero or
+     * negative and fires the registered listeners for the add event.
      *
      * @param product The product to be added to the cart.
      * @param quantity The quantity of the product to be added.
-     * @throws ZeroQuantityException if the quantity is zero or negative.
+     * @throws ZeroQuantityException If the quantity is zero or negative.
      */
     @Override
     public void add(Product product, int quantity) {
-
         if (quantity <= 0) {
             throw new ZeroQuantityException();
         }
 
-        this.fireListener(this.addAction);
+        this.fireCheckListener(addAction, product, quantity);
 
         int newQuantity = quantity + getCount(product);
         this.putToCart(product, newQuantity);
@@ -92,23 +92,22 @@ public class Checkout extends Cart {
 
     /**
      * Overrides the remove method from the Cart class to include additional
-     * checks and actions. It throws ZeroQuantityException if the quantity is
-     * zero or negative, ProductNotInCartException if the product is not present
-     * in the cart, and InsufficientQuantityException if the requested quantity
-     * to remove exceeds the stored quantity. It also fires the registered
-     * listeners for the remove event.
+     * checks and actions. It throws a ZeroQuantityException if the quantity is
+     * zero or negative, a ProductNotInCartException if the product is not
+     * present in the cart, and an InsufficientQuantityException if the
+     * requested quantity to remove exceeds the stored quantity. It also fires
+     * the registered listeners for the remove event.
      *
      * @param product The product to be removed from the cart.
      * @param quantity The quantity of the product to be removed.
-     * @throws ZeroQuantityException if the quantity is zero or negative.
-     * @throws ProductNotInCartException if the product is not present in the
+     * @throws ZeroQuantityException If the quantity is zero or negative.
+     * @throws ProductNotInCartException If the product is not present in the
      * cart.
-     * @throws InsufficientQuantityException if the requested quantity to remove
+     * @throws InsufficientQuantityException If the requested quantity to remove
      * exceeds the stored quantity.
      */
     @Override
     public void remove(Product product, int quantity) {
-
         if (quantity <= 0) {
             throw new ZeroQuantityException();
         }
@@ -121,7 +120,7 @@ public class Checkout extends Cart {
             throw new InsufficientQuantityException();
         }
 
-        this.fireListener(this.removeAction);
+        this.fireCheckListener(removeAction, product, quantity);
         int newQuantity = getCount(product) - quantity;
         this.putToCart(product, newQuantity);
     }
@@ -149,6 +148,20 @@ public class Checkout extends Cart {
     public void clear() {
         this.fireListener(this.clearAction);
         super.clear();
+    }
+
+    /**
+     * Utility method to execute all the registered listeners for a specific
+     * event.
+     *
+     * @param listeners The list of listeners to be executed.
+     * @param product The product related to the event.
+     * @param quantity The quantity related to the event.
+     */
+    private void fireCheckListener(List<BiConsumer<Product, Integer>> listeners, Product product, int quantity) {
+        for (var listener : listeners) {
+            listener.accept(product, quantity);
+        }
     }
 
     /**

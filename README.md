@@ -76,14 +76,18 @@ Example:
 Checkout checkout = new Checkout();
 
 // Register a listener for the add event
-checkout.onAdd(cart -> System.out.println("Product added to cart: " + cart));
+checkout.onAdd((product, quantity) -> System.out.println(quantity + "x " + product.getName() + " added to cart."));
 
 // Register a listener for the remove event
-checkout.onRemove(cart -> System.out.println("Product removed from cart: " + cart));
+checkout.onRemove((product, quantity) -> System.out.println(quantity + "x " + product.getName() + " removed from cart."));
 
 // Register a listener for the clear event
-checkout.onClear(cart -> System.out.println("Cart cleared: " + cart));
+checkout.onClear(cart -> System.out.println("Cart cleared."));
 
 // Register a listener for any action (add, remove, or clear)
-checkout.onAction(cart -> System.out.println("Action occurred: " + cart));
+checkout.onAction(cart -> System.out.println("Cart action occurred."));
 ```
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
