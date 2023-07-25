@@ -1,0 +1,13 @@
+# NetBeans project files
+/nbproject/private/
+/nbproject/build/
+/nbproject/genfiles/
+
+# Ant build artifacts
+/build/
+/dist/
+/nbbuild/
+/nbdist/
+/nbactions.xml
+/nb-configuration.xml
+/*.properties
