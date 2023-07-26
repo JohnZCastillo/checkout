@@ -120,9 +120,12 @@ public class Checkout extends Cart {
             throw new InsufficientQuantityException();
         }
 
+        
         this.fireCheckListener(removeAction, product, quantity);
+
         int newQuantity = getCount(product) - quantity;
         this.putToCart(product, newQuantity);
+
     }
 
     /**
@@ -136,6 +139,12 @@ public class Checkout extends Cart {
     @Override
     public void putToCart(Product product, int quantity) {
         super.putToCart(product, quantity);
+        
+       //remove product whose quantity is zero
+        if(this.getCount(product) <= 0){
+            this.getCart().remove(product);
+        }
+
         this.fireListener(this.action);
     }
 
@@ -148,6 +157,7 @@ public class Checkout extends Cart {
     public void clear() {
         this.fireListener(this.clearAction);
         super.clear();
+        this.fireListener(action);
     }
 
     /**

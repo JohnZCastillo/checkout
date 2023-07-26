@@ -2,11 +2,7 @@ package checkout;
 
 import java.util.LinkedHashMap;
 
-/**
- * The Cart class represents a shopping cart that holds products and their respective quantities.
- * It uses a LinkedHashMap to store the products as keys and their corresponding quantities as values.
- */
-public class Cart {
+public class Cart{
 
     // LinkedHashMap to store products and their quantities in the cart
     private LinkedHashMap<Product, Integer> cart;
