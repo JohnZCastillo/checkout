@@ -2,10 +2,10 @@ package checkout;
 
 import java.util.LinkedHashMap;
 
-public class Cart{
+public class Cart<T extends Product>{
 
     // LinkedHashMap to store products and their quantities in the cart
-    private LinkedHashMap<Product, Integer> cart;
+    private LinkedHashMap<T, Integer> cart;
 
     /**
      * Constructs an empty Cart object with an empty LinkedHashMap.
@@ -20,7 +20,7 @@ public class Cart{
      * @param product The product to be added to the cart.
      * @param quantity The quantity of the product to be added.
      */
-    public void add(Product product, int quantity){
+    public void add(T product, int quantity){
         int newQuantity = quantity + getCount(product);
         this.putToCart(product, newQuantity);
     }
@@ -31,7 +31,7 @@ public class Cart{
      * @param product The product to be removed from the cart.
      * @param quantity The quantity of the product to be removed.
      */
-    public void remove(Product product, int quantity){
+    public void remove(T product, int quantity){
         int newQuantity = getCount(product) - quantity;
         this.putToCart(product, newQuantity);
     }
@@ -41,7 +41,7 @@ public class Cart{
      * @param product The product to be checked.
      * @return true if the product is present in the cart, false otherwise.
      */
-    public boolean inCart(Product product) {
+    public boolean inCart(T product) {
         return cart.containsKey(product);
     }
 
@@ -50,7 +50,7 @@ public class Cart{
      * @param product The product whose quantity is to be retrieved.
      * @return The quantity of the specified product in the cart. If the product is not found, returns 0.
      */
-    public int getCount(Product product) {
+    public int getCount(T product) {
         return cart.containsKey(product) ? cart.get(product) : 0;
     }
 
@@ -66,7 +66,7 @@ public class Cart{
      * @param product The product to be added to the cart.
      * @param quantity The quantity of the product to be added.
      */
-    public void putToCart(Product product, int quantity) {
+    public void putToCart(T product, int quantity) {
         cart.put(product, quantity);
     }
 
@@ -74,7 +74,7 @@ public class Cart{
      * Retrieves the LinkedHashMap representing the cart items.
      * @return The LinkedHashMap containing products as keys and their quantities as values.
      */
-    public LinkedHashMap<Product, Integer> getCart() {
+    public LinkedHashMap<T, Integer> getCart() {
         return cart;
     }
 }

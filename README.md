@@ -8,6 +8,60 @@ The Checkout System is a Java library that allows you to manage a shopping cart 
 - Remove products from the cart with quantities.
 - Clear the cart (remove all items).
 - Calculate the total cost of products in the cart.
+- Transaction
+
+## Transaction Class
+
+The `Transaction` class facilitates the logic for calculating the total, cash amount, and change. You can also add listener so you can hook up event for the view
+
+### Constructor
+
+```java
+public Transaction(Consumer<BigDecimal> totalAction, Consumer<BigDecimal> cashAction, Consumer<BigDecimal> changeAction)
+```
+
+Creates a new `Transaction` object with the specified actions for updating the total, cash, and change in the checkout view.
+
+- `totalAction`: The action to be called when the total needs to be updated in the view.
+- `cashAction`: The action to be called when the cash amount needs to be updated in the view.
+- `changeAction`: The action to be called when the change amount needs to be updated in the view.
+
+### `run()`
+
+```java
+public void run()
+```
+
+This method should be called every time the cart changes or the user inputs the cash. Before calling this method, ensure that you have set the cash or total amount so that it remains synchronized with the cart value.
+
+- The method updates the total in the view by calling the `totalAction`.
+- If the cash amount is less than or equal to zero, the method returns without further calculations.
+- If the cash amount is greater than zero and less than the total amount, the method does not throw an exception, but it might be an indication of insufficient cash for the transaction.
+- The method calculates the change by subtracting the total from the cash and updates the cash and change in the view using the `cashAction` and `changeAction` respectively.
+
+### `setTotal(double total)`
+
+```java
+public void setTotal(double total)
+```
+
+This method sets the total amount for the transaction.
+
+- `total`: The total amount as a `double`.
+
+### `setCash(double cash)`
+
+```java
+public void setCash(double cash)
+```
+
+This method sets the cash amount for the transaction.
+
+- `cash`: The cash amount as a `double`.
+
+Please ensure that you use these methods appropriately to update the cash and total amounts before calling the `run()` method to reflect the changes in the view.
+
+Note: There is a commented section that indicates a possible exception (`InsufficientAmountException`) that can be thrown if the cash amount is less than the total amount. If this behavior is desired, you can uncomment the relevant lines and create the `InsufficientAmountException` class to handle such situations.
 
 ## Usage
 
@@ -33,7 +87,7 @@ public class MyProduct implements Product {
 To manage the shopping cart, create an instance of the `Cart` class:
 
 ```java
-Cart cart = new Cart();
+Checkout cart = new Checkout();
 ```
 
 ### 3. Add Products to the Cart
@@ -41,11 +95,8 @@ Cart cart = new Cart();
 Add products to the cart using the `add` method:
 
 ```java
-Product product1 = new MyProduct("Product A", "Description of Product A", "1234567890", 10.99);
+Product product1 = new MyProduct();
 cart.add(product1, 2);
-
-Product product2 = new MyProduct("Product B", "Description of Product B", "0987654321", 5.49);
-cart.add(product2, 3);
 ```
 
 ### 4. Remove Products from the Cart
@@ -53,7 +104,7 @@ cart.add(product2, 3);
 Remove products from the cart using the `remove` method:
 
 ```java
-cart.remove(product1, 1);
+cart.remove(product, 1);
 ```
 
 ### 5. Calculate the Total Cost
@@ -73,19 +124,21 @@ You can register listeners (consumers) to be executed when specific events occur
 Example:
 
 ```java
-Checkout checkout = new Checkout();
+Checkout cart = new Checkout();
 
 // Register a listener for the add event
-checkout.onAdd((product, quantity) -> System.out.println(quantity + "x " + product.getName() + " added to cart."));
+cart.onAdd((product, quantity) -> System.out.println(quantity + "x " + product.getName() + " added to cart."));
 
 // Register a listener for the remove event
-checkout.onRemove((product, quantity) -> System.out.println(quantity + "x " + product.getName() + " removed from cart."));
+cart.onRemove((product, quantity) -> System.out.println(quantity + "x " + product.getName() + " removed from cart."));
 
 // Register a listener for the clear event
-checkout.onClear(cart -> System.out.println("Cart cleared."));
+//Note: products is a LinkedHashMap<Product,Integer>
+cart.onClear(products -> System.out.println("Cart cleared."));
 
 // Register a listener for any action (add, remove, or clear)
-checkout.onAction(cart -> System.out.println("Cart action occurred."));
+//Note: products is a LinkedHashMap<Product,Integer>
+cart.onAction(proudcts -> System.out.println("Cart action occurred."));
 ```
 
 ## License

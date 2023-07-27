@@ -1,5 +1,6 @@
 package checkout;
 
+import checkout.exception.CartIsLockException;
 import checkout.exception.InsufficientQuantityException;
 import checkout.exception.ProductNotInCartException;
 import checkout.exception.ZeroQuantityException;
@@ -15,12 +16,14 @@ import java.util.function.Consumer;
  * manipulation in the cart. It supports listeners for adding, removing, and
  * clearing products from the cart.
  */
-public class Checkout extends Cart {
+public class Checkout<T extends Product> extends Cart<T>{
 
-    private final List<BiConsumer<Product, Integer>> addAction;
-    private final List<BiConsumer<Product, Integer>> removeAction;
-    private final List<Consumer<LinkedHashMap<Product, Integer>>> clearAction;
-    private final List<Consumer<LinkedHashMap<Product, Integer>>> action;
+    private final List<BiConsumer<T, Integer>> addAction;
+    private final List<BiConsumer<T, Integer>> removeAction;
+    private final List<Consumer<LinkedHashMap<T, Integer>>> clearAction;
+    private final List<Consumer<LinkedHashMap<T, Integer>>> action;
+
+    private boolean lock;
 
     /**
      * Constructs a new Checkout object with empty lists to store the registered
@@ -33,12 +36,20 @@ public class Checkout extends Cart {
         this.action = new ArrayList<>();
     }
 
+    public boolean isLock() {
+        return lock;
+    }
+
+    public void setLock(boolean lock) {
+        this.lock = lock;
+    }
+
     /**
      * Add a consumer to be executed when a product is added to the cart.
      *
      * @param consumer The consumer to be added for the add event.
      */
-    public void onAdd(BiConsumer<Product, Integer> consumer) {
+    public void onAdd(BiConsumer<T, Integer> consumer) {
         addAction.add(consumer);
     }
 
@@ -47,7 +58,7 @@ public class Checkout extends Cart {
      *
      * @param consumer The consumer to be added for the remove event.
      */
-    public void onRemove(BiConsumer<Product, Integer> consumer) {
+    public void onRemove(BiConsumer<T, Integer> consumer) {
         removeAction.add(consumer);
     }
 
@@ -56,7 +67,7 @@ public class Checkout extends Cart {
      *
      * @param consumer The consumer to be added for the clear event.
      */
-    public void onClear(Consumer<LinkedHashMap<Product, Integer>> consumer) {
+    public void onClear(Consumer<LinkedHashMap<T, Integer>> consumer) {
         clearAction.add(consumer);
     }
 
@@ -65,7 +76,7 @@ public class Checkout extends Cart {
      *
      * @param consumer The consumer to be added for any action event.
      */
-    public void onAction(Consumer<LinkedHashMap<Product, Integer>> consumer) {
+    public void onAction(Consumer<LinkedHashMap<T, Integer>> consumer) {
         action.add(consumer);
     }
 
@@ -79,7 +90,12 @@ public class Checkout extends Cart {
      * @throws ZeroQuantityException If the quantity is zero or negative.
      */
     @Override
-    public void add(Product product, int quantity) {
+    public void add(T product, int quantity) {
+
+        if (lock) {
+            throw new CartIsLockException();
+        }
+
         if (quantity <= 0) {
             throw new ZeroQuantityException();
         }
@@ -107,7 +123,12 @@ public class Checkout extends Cart {
      * exceeds the stored quantity.
      */
     @Override
-    public void remove(Product product, int quantity) {
+    public void remove(T product, int quantity) {
+
+        if (lock) {
+            throw new CartIsLockException();
+        }
+        
         if (quantity <= 0) {
             throw new ZeroQuantityException();
         }
@@ -120,7 +141,6 @@ public class Checkout extends Cart {
             throw new InsufficientQuantityException();
         }
 
-        
         this.fireCheckListener(removeAction, product, quantity);
 
         int newQuantity = getCount(product) - quantity;
@@ -137,11 +157,16 @@ public class Checkout extends Cart {
      * @param quantity The quantity of the product to be added.
      */
     @Override
-    public void putToCart(Product product, int quantity) {
+    public void putToCart(T product, int quantity) {
+
+        if (lock) {
+            throw new CartIsLockException();
+        }
+
         super.putToCart(product, quantity);
-        
-       //remove product whose quantity is zero
-        if(this.getCount(product) <= 0){
+
+        //remove product whose quantity is zero
+        if (this.getCount(product) <= 0) {
             this.getCart().remove(product);
         }
 
@@ -168,7 +193,7 @@ public class Checkout extends Cart {
      * @param product The product related to the event.
      * @param quantity The quantity related to the event.
      */
-    private void fireCheckListener(List<BiConsumer<Product, Integer>> listeners, Product product, int quantity) {
+    private void fireCheckListener(List<BiConsumer<T, Integer>> listeners, T product, int quantity) {
         for (var listener : listeners) {
             listener.accept(product, quantity);
         }
@@ -180,7 +205,7 @@ public class Checkout extends Cart {
      *
      * @param listeners The list of listeners to be executed.
      */
-    private void fireListener(List<Consumer<LinkedHashMap<Product, Integer>>> listeners) {
+    private void fireListener(List<Consumer<LinkedHashMap<T, Integer>>> listeners) {
         for (var listener : listeners) {
             listener.accept(this.getCart());
         }
