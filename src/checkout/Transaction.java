@@ -54,10 +54,6 @@ public class Transaction {
             return;
         }
 
-        if (cash.doubleValue() != 0 && total.doubleValue() > cash.doubleValue()) {
-            throw new InsufficientAmountException();
-        }
-
         // Calculate the change and update the cash and change in the view.
         change = cash.subtract(total);
         change.setScale(2, RoundingMode.CEILING);
