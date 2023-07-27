@@ -80,4 +80,29 @@ public class Transaction {
         this.cash = BigDecimal.valueOf(cash);
     }
 
+    public BigDecimal getTotal() {
+        return total;
+    }
+
+    public void setTotal(BigDecimal total) {
+        this.total = total;
+    }
+
+    public BigDecimal getCash() {
+        return cash;
+    }
+
+    public void setCash(BigDecimal cash) {
+        this.cash = cash;
+    }
+
+    public BigDecimal getChange() {
+        return change;
+    }
+
+    public void setChange(BigDecimal change) {
+        this.change = change;
+    }
+    
+
 }
