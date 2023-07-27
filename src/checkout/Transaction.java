@@ -1,5 +1,6 @@
 package checkout;
 
+import checkout.exception.InsufficientAmountException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.function.Consumer;
@@ -54,7 +55,7 @@ public class Transaction {
         }
 
         if (cash.doubleValue() != 0 && total.doubleValue() > cash.doubleValue()) {
-//            throw new InsufficientAmountException();
+            throw new InsufficientAmountException();
         }
 
         // Calculate the change and update the cash and change in the view.
